@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/services/supabase';
+import { supabaseAdmin } from '$lib/services/supabaseAdmin';
 import { apiKeyService } from '$lib/services/apiKeyService';
 
 async function validateRequest(request: Request): Promise<{ userId: string; scopes: string[] } | Response> {
@@ -29,7 +29,7 @@ export const GET: RequestHandler = async ({ request }) => {
 		return json({ success: false, error: 'API key does not have read permission' }, { status: 403 });
 	}
 
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from('tier_lists')
 		.select('*')
 		.eq('user_id', auth.userId)
@@ -62,7 +62,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ success: false, error: 'Title is required' }, { status: 400 });
 	}
 
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from('tier_lists')
 		.insert({
 			user_id: auth.userId,

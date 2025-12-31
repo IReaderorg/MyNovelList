@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/services/supabase';
+import { supabaseAdmin } from '$lib/services/supabaseAdmin';
 import { apiKeyService } from '$lib/services/apiKeyService';
 
 async function validateRequest(request: Request): Promise<{ userId: string; scopes: string[] } | Response> {
@@ -41,7 +41,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 	}
 
 	// Search in public novels database
-	let query = supabase
+	let query = supabaseAdmin
 		.from('novels')
 		.select('*');
 
@@ -63,7 +63,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 
 	// Get user's progress for these novels
 	const novelIds = (data || []).map(n => n.id);
-	const { data: progressData } = await supabase
+	const { data: progressData } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('user_id', auth.userId)

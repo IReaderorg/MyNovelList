@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/services/supabase';
+import { supabaseAdmin } from '$lib/services/supabaseAdmin';
 import { apiKeyService } from '$lib/services/apiKeyService';
 import type { ProgressInput } from '$lib/types';
 
@@ -30,7 +30,7 @@ export const GET: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'API key does not have read permission' }, { status: 403 });
 	}
 
-	const { data: progress, error } = await supabase
+	const { data: progress, error } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('novel_id', params.id)
@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Check if novel exists
-	const { data: novel, error: novelError } = await supabase
+	const { data: novel, error: novelError } = await supabaseAdmin
 		.from('novels')
 		.select('id')
 		.eq('id', params.id)
@@ -65,7 +65,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Check if already in library
-	const { data: existing } = await supabase
+	const { data: existing } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('novel_id', params.id)
@@ -83,7 +83,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 		// Empty body is fine, use defaults
 	}
 
-	const { data: progress, error } = await supabase
+	const { data: progress, error } = await supabaseAdmin
 		.from('novel_progress')
 		.insert({
 			user_id: auth.userId,
@@ -122,7 +122,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Get current progress
-	const { data: current, error: fetchError } = await supabase
+	const { data: current, error: fetchError } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('novel_id', params.id)
@@ -159,7 +159,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 		updates.status = 'reading';
 	}
 
-	const { data: progress, error } = await supabase
+	const { data: progress, error } = await supabaseAdmin
 		.from('novel_progress')
 		.update(updates)
 		.eq('novel_id', params.id)
@@ -183,7 +183,7 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'API key does not have delete permission' }, { status: 403 });
 	}
 
-	const { error } = await supabase
+	const { error } = await supabaseAdmin
 		.from('novel_progress')
 		.delete()
 		.eq('novel_id', params.id)

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/services/supabase';
+import { supabaseAdmin } from '$lib/services/supabaseAdmin';
 import { apiKeyService } from '$lib/services/apiKeyService';
 import type { NovelInput } from '$lib/types';
 
@@ -31,7 +31,7 @@ export const GET: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Get novel (public)
-	const { data: novel, error } = await supabase
+	const { data: novel, error } = await supabaseAdmin
 		.from('novels')
 		.select('*')
 		.eq('id', params.id)
@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Get user's progress (private)
-	const { data: progress } = await supabase
+	const { data: progress } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('novel_id', params.id)
@@ -80,7 +80,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 	if (body.total_chapters !== undefined) novelUpdates.total_chapters = body.total_chapters;
 	if (body.tags !== undefined) novelUpdates.tags = body.tags;
 
-	const { data: novel, error } = await supabase
+	const { data: novel, error } = await supabaseAdmin
 		.from('novels')
 		.update(novelUpdates)
 		.eq('id', params.id)
@@ -93,7 +93,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Get user's progress
-	const { data: progress } = await supabase
+	const { data: progress } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('novel_id', params.id)
@@ -120,7 +120,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Get novel first
-	const { data: existingNovel } = await supabase
+	const { data: existingNovel } = await supabaseAdmin
 		.from('novels')
 		.select('*')
 		.eq('id', params.id)
@@ -145,7 +145,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 		if (body.tags !== undefined) novelUpdates.tags = body.tags;
 
 		if (Object.keys(novelUpdates).length > 1) {
-			const { data } = await supabase
+			const { data } = await supabaseAdmin
 				.from('novels')
 				.update(novelUpdates)
 				.eq('id', params.id)
@@ -156,7 +156,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Get user's progress
-	const { data: progress } = await supabase
+	const { data: progress } = await supabaseAdmin
 		.from('novel_progress')
 		.select('*')
 		.eq('novel_id', params.id)
@@ -176,7 +176,7 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Remove from user's library (delete progress)
-	const { error } = await supabase
+	const { error } = await supabaseAdmin
 		.from('novel_progress')
 		.delete()
 		.eq('novel_id', params.id)

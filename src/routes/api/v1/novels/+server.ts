@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/services/supabase';
+import { supabaseAdmin } from '$lib/services/supabaseAdmin';
 import { apiKeyService } from '$lib/services/apiKeyService';
 import type { NovelInput, ProgressInput } from '$lib/types';
 
@@ -36,7 +36,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 	const search = url.searchParams.get('search');
 
 	// Get user's progress entries with joined novel data
-	let query = supabase
+	let query = supabaseAdmin
 		.from('novel_progress')
 		.select('*, novel:novels(*)', { count: 'exact' })
 		.eq('user_id', auth.userId)
@@ -117,7 +117,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	// Check if novel already exists by source_url or exact title match
 	let existingNovel = null;
 	if (body.source_url) {
-		const { data } = await supabase
+		const { data } = await supabaseAdmin
 			.from('novels')
 			.select('*')
 			.eq('source_url', body.source_url)
@@ -127,7 +127,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	if (!existingNovel) {
 		// Check by exact title
-		const { data } = await supabase
+		const { data } = await supabaseAdmin
 			.from('novels')
 			.select('*')
 			.ilike('title', body.title)
@@ -141,7 +141,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		novel = existingNovel;
 	} else {
 		// Create new novel
-		const { data, error } = await supabase
+		const { data, error } = await supabaseAdmin
 			.from('novels')
 			.insert({
 				user_id: auth.userId,
@@ -167,7 +167,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	if (addToLibrary) {
 		// Check if already in library
-		const { data: existingProgress } = await supabase
+		const { data: existingProgress } = await supabaseAdmin
 			.from('novel_progress')
 			.select('*')
 			.eq('novel_id', novel.id)
@@ -177,7 +177,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (existingProgress) {
 			progress = existingProgress;
 		} else {
-			const { data: newProgress, error: progressError } = await supabase
+			const { data: newProgress, error: progressError } = await supabaseAdmin
 				.from('novel_progress')
 				.insert({
 					user_id: auth.userId,

@@ -80,7 +80,7 @@
 			<!-- Base URL -->
 			<div class="card">
 				<h2 class="text-xl font-semibold text-gray-100 mb-4">Base URL</h2>
-				<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">https://mynovellist.netlify.app/api/v1</code></pre>
+				<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">https://mynoveltracker.netlify.app/api/v1</code></pre>
 			</div>
 			
 			<!-- Endpoint Details -->
@@ -103,7 +103,7 @@
 					</div>
 					
 					<h4 class="font-medium text-gray-100 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynovellist.netlify.app/api/v1/novels?status=reading&page=1" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynoveltracker.netlify.app/api/v1/novels?status=reading&page=1" \
   -H "Authorization: Bearer mnl_your_api_key"</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Response</h4>
@@ -147,7 +147,7 @@
 					<p class="text-gray-300 mb-4">Get a single novel by ID with your progress (if in library).</p>
 					
 					<h4 class="font-medium text-gray-100 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynovellist.netlify.app/api/v1/novels/uuid-here" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynoveltracker.netlify.app/api/v1/novels/uuid-here" \
   -H "Authorization: Bearer mnl_your_api_key"</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Response</h4>
@@ -185,7 +185,7 @@
 					</div>
 					
 					<h4 class="font-medium text-gray-100 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynovellist.netlify.app/api/v1/novels/search?q=solo%20leveling" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynoveltracker.netlify.app/api/v1/novels/search?q=solo%20leveling" \
   -H "Authorization: Bearer mnl_your_api_key"</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Response</h4>
@@ -235,7 +235,7 @@
 }`}</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X POST "https://mynovellist.netlify.app/api/v1/novels" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X POST "https://mynoveltracker.netlify.app/api/v1/novels" \
   -H "Authorization: Bearer mnl_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{`{"title": "Solo Leveling", "status": "reading", "current_chapter": 50}`}'</code></pre>
@@ -262,7 +262,7 @@
 }`}</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X PUT "https://mynovellist.netlify.app/api/v1/novels/uuid-here" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X PUT "https://mynoveltracker.netlify.app/api/v1/novels/uuid-here" \
   -H "Authorization: Bearer mnl_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{`{"total_chapters": 300}`}'</code></pre>
@@ -276,7 +276,7 @@
 					<p class="text-gray-300 mb-4">Get your progress on a specific novel.</p>
 					
 					<h4 class="font-medium text-gray-100 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynovellist.netlify.app/api/v1/novels/uuid-here/progress" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X GET "https://mynoveltracker.netlify.app/api/v1/novels/uuid-here/progress" \
   -H "Authorization: Bearer mnl_your_api_key"</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Response</h4>
@@ -313,7 +313,7 @@
 }`}</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X POST "https://mynovellist.netlify.app/api/v1/novels/uuid-here/progress" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X POST "https://mynoveltracker.netlify.app/api/v1/novels/uuid-here/progress" \
   -H "Authorization: Bearer mnl_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{`{"status": "reading", "current_chapter": 10}`}'</code></pre>
@@ -342,7 +342,7 @@
 }`}</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Example: Increment Chapter</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X PUT "https://mynovellist.netlify.app/api/v1/novels/uuid-here/progress" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X PUT "https://mynoveltracker.netlify.app/api/v1/novels/uuid-here/progress" \
   -H "Authorization: Bearer mnl_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{`{"increment": 1}`}'</code></pre>
@@ -360,7 +360,7 @@
 					<p class="text-gray-300 mb-4">Remove a novel from your library (deletes your progress, not the novel itself). Requires <code class="text-primary-400">delete</code> permission.</p>
 					
 					<h4 class="font-medium text-gray-100 mb-2">Example Request</h4>
-					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X DELETE "https://mynovellist.netlify.app/api/v1/novels/uuid-here" \
+					<pre class="bg-gray-900 rounded-lg p-4 overflow-x-auto text-sm"><code class="text-gray-300">curl -X DELETE "https://mynoveltracker.netlify.app/api/v1/novels/uuid-here" \
   -H "Authorization: Bearer mnl_your_api_key"</code></pre>
 					
 					<h4 class="font-medium text-gray-100 mt-4 mb-2">Response</h4>

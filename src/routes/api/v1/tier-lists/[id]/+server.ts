@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/services/supabase';
+import { supabaseAdmin } from '$lib/services/supabaseAdmin';
 import { apiKeyService } from '$lib/services/apiKeyService';
 
 async function validateRequest(request: Request): Promise<{ userId: string; scopes: string[] } | Response> {
@@ -29,7 +29,7 @@ export const GET: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'API key does not have read permission' }, { status: 403 });
 	}
 
-	const { data: tierList, error: tlError } = await supabase
+	const { data: tierList, error: tlError } = await supabaseAdmin
 		.from('tier_lists')
 		.select('*')
 		.eq('id', params.id)
@@ -40,7 +40,7 @@ export const GET: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'Tier list not found' }, { status: 404 });
 	}
 
-	const { data: items, error: itemsError } = await supabase
+	const { data: items, error: itemsError } = await supabaseAdmin
 		.from('tier_list_items')
 		.select('*, novel:novels(id, title, cover_url, author)')
 		.eq('tier_list_id', params.id)
@@ -69,7 +69,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
 	}
 
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from('tier_lists')
 		.update({
 			...body,
@@ -96,7 +96,7 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'API key does not have delete permission' }, { status: 403 });
 	}
 
-	const { error } = await supabase
+	const { error } = await supabaseAdmin
 		.from('tier_lists')
 		.delete()
 		.eq('id', params.id)

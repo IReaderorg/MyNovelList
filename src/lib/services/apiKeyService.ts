@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { supabaseAdmin } from './supabaseAdmin';
 import type { ApiKey, ApiKeyWithSecret, ApiScope } from '$lib/types';
 
 // Generate a secure random API key
@@ -74,9 +75,9 @@ export const apiKeyService = {
 	async validateKey(apiKey: string): Promise<{ userId: string; scopes: ApiScope[] } | null> {
 		const keyHash = await hashApiKey(apiKey);
 		
-		const { data, error } = await supabase
+		const { data, error } = await supabaseAdmin
 			.from('api_keys')
-			.select('id, user_id, scopes, is_active, expires_at')
+			.select('id, user_id, scopes, is_active, expires_at, request_count')
 			.eq('key_hash', keyHash)
 			.single();
 
@@ -85,7 +86,7 @@ export const apiKeyService = {
 		if (data.expires_at && new Date(data.expires_at) < new Date()) return null;
 
 		// Update usage stats
-		await supabase
+		await supabaseAdmin
 			.from('api_keys')
 			.update({ 
 				last_used_at: new Date().toISOString(),
