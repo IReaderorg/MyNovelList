@@ -1,22 +1,37 @@
 export type NovelStatus = 'planning' | 'reading' | 'completed' | 'on_hold' | 'dropped';
 
+// Novel metadata (shared/public)
 export interface Novel {
 	id: string;
-	user_id: string;
+	user_id: string; // who added this novel
 	title: string;
 	author?: string;
 	cover_url?: string;
 	source_url?: string;
+	total_chapters?: number;
+	tags: string[];
+	created_at: string;
+	updated_at: string;
+}
+
+// User's private progress on a novel
+export interface NovelProgress {
+	id: string;
+	user_id: string;
+	novel_id: string;
 	status: NovelStatus;
 	current_chapter: number;
-	total_chapters?: number;
 	score?: number;
 	notes?: string;
-	tags: string[];
 	started_at?: string;
 	completed_at?: string;
 	created_at: string;
 	updated_at: string;
+}
+
+// Combined view for user's library
+export interface NovelWithProgress extends Novel {
+	progress?: NovelProgress;
 }
 
 export interface NovelInput {
@@ -24,14 +39,25 @@ export interface NovelInput {
 	author?: string;
 	cover_url?: string;
 	source_url?: string;
+	total_chapters?: number;
+	tags?: string[];
+}
+
+export interface ProgressInput {
 	status?: NovelStatus;
 	current_chapter?: number;
-	total_chapters?: number;
 	score?: number;
 	notes?: string;
-	tags?: string[];
 	started_at?: string;
 	completed_at?: string;
+}
+
+export interface Profile {
+	id: string;
+	username?: string;
+	display_name?: string;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface TierConfig {

@@ -1,13 +1,15 @@
 <script lang="ts">
-	import type { Novel } from '$lib/types';
+	import type { NovelWithProgress } from '$lib/types';
 	import { novels } from '$lib/stores/novels';
 	import { toast } from './ui/Toast.svelte';
 	
-	export let novel: Novel;
+	export let novel: NovelWithProgress;
 	
-	let chapterInput = novel.current_chapter;
+	let chapterInput = novel.progress?.current_chapter ?? 0;
 	let debounceTimer: ReturnType<typeof setTimeout>;
 	let imgError = false;
+	
+	$: chapterInput = novel.progress?.current_chapter ?? 0;
 	
 	const statusColors: Record<string, string> = {
 		planning: 'bg-gray-600',
@@ -20,7 +22,7 @@
 	function handleChapterChange() {
 		clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(async () => {
-			if (chapterInput !== novel.current_chapter) {
+			if (chapterInput !== novel.progress?.current_chapter) {
 				await novels.updateChapter(novel.id, chapterInput);
 				toast('Chapter updated', 'success');
 			}
@@ -54,38 +56,44 @@
 		</div>
 		
 		<!-- Title -->
-		<h3 class="font-semibold text-gray-100 text-sm truncate hover:text-primary-400 transition-colors">
+		<h3 class="font-semibold text-sm truncate hover:text-primary-400 transition-colors">
 			{novel.title}
 		</h3>
 	</a>
 	
 	<!-- Status Badge -->
-	<span class="absolute top-2 right-2 px-2 py-0.5 text-xs rounded-full text-white {statusColors[novel.status]}">
-		{novel.status.replace('_', ' ')}
-	</span>
+	{#if novel.progress}
+		<span class="absolute top-2 right-2 px-2 py-0.5 text-xs rounded-full text-white {statusColors[novel.progress.status]}">
+			{novel.progress.status.replace('_', ' ')}
+		</span>
+	{/if}
 	
 	<!-- Score -->
-	{#if novel.score !== undefined && novel.score !== null}
+	{#if novel.progress?.score !== undefined && novel.progress?.score !== null}
 		<div class="absolute top-2 left-2 flex items-center gap-1 bg-black/70 rounded px-1.5 py-0.5">
 			<svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
 				<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
 			</svg>
-			<span class="text-xs text-white">{novel.score}</span>
+			<span class="text-xs text-white">{novel.progress.score}</span>
 		</div>
 	{/if}
 	
 	<!-- Chapter Input -->
-	<div class="mt-2 flex items-center gap-1" on:click|stopPropagation on:keydown|stopPropagation>
-		<span class="text-xs text-gray-400">Ch.</span>
-		<input
-			type="number"
-			bind:value={chapterInput}
-			on:input={handleChapterChange}
-			min="0"
-			class="w-12 px-1 py-0.5 text-xs bg-gray-700 border border-gray-600 rounded text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
-		/>
-		{#if novel.total_chapters}
-			<span class="text-xs text-gray-400">/ {novel.total_chapters}</span>
-		{/if}
-	</div>
+	{#if novel.progress}
+		<div class="mt-2 flex items-center gap-1" role="group" aria-label="Chapter progress">
+			<span class="text-xs text-gray-400">Ch.</span>
+			<input
+				type="number"
+				bind:value={chapterInput}
+				on:input={handleChapterChange}
+				on:click|stopPropagation
+				on:keydown|stopPropagation
+				min="0"
+				class="w-12 px-1 py-0.5 text-xs bg-gray-700 border border-gray-600 rounded text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
+			/>
+			{#if novel.total_chapters}
+				<span class="text-xs text-gray-400">/ {novel.total_chapters}</span>
+			{/if}
+		</div>
+	{/if}
 </div>

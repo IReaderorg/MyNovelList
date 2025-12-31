@@ -23,18 +23,18 @@
 		const all = $novels.novels;
 		
 		const byStatus = {
-			planning: all.filter(n => n.status === 'planning').length,
-			reading: all.filter(n => n.status === 'reading').length,
-			completed: all.filter(n => n.status === 'completed').length,
-			on_hold: all.filter(n => n.status === 'on_hold').length,
-			dropped: all.filter(n => n.status === 'dropped').length
+			planning: all.filter(n => n.progress?.status === 'planning').length,
+			reading: all.filter(n => n.progress?.status === 'reading').length,
+			completed: all.filter(n => n.progress?.status === 'completed').length,
+			on_hold: all.filter(n => n.progress?.status === 'on_hold').length,
+			dropped: all.filter(n => n.progress?.status === 'dropped').length
 		};
 		
-		const totalChapters = all.reduce((sum, n) => sum + (n.current_chapter || 0), 0);
+		const totalChapters = all.reduce((sum, n) => sum + (n.progress?.current_chapter || 0), 0);
 		
-		const scored = all.filter(n => n.score !== null && n.score !== undefined);
+		const scored = all.filter(n => n.progress?.score !== null && n.progress?.score !== undefined);
 		const avgScore = scored.length > 0 
-			? Math.round(scored.reduce((sum, n) => sum + (n.score || 0), 0) / scored.length)
+			? Math.round(scored.reduce((sum, n) => sum + (n.progress?.score || 0), 0) / scored.length)
 			: 0;
 		
 		const completionRate = all.length > 0
@@ -62,7 +62,7 @@
 			{ label: '<50', min: 0, max: 49, count: 0 }
 		];
 		scored.forEach(n => {
-			const score = n.score || 0;
+			const score = n.progress?.score || 0;
 			const range = scoreRanges.find(r => score >= r.min && score <= r.max);
 			if (range) range.count++;
 		});
@@ -70,7 +70,7 @@
 		// Recent activity (novels updated in last 30 days)
 		const thirtyDaysAgo = new Date();
 		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-		const recentlyActive = all.filter(n => new Date(n.updated_at) > thirtyDaysAgo).length;
+		const recentlyActive = all.filter(n => n.progress && new Date(n.progress.updated_at) > thirtyDaysAgo).length;
 		
 		return {
 			total: all.length,

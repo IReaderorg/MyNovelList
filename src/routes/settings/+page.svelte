@@ -4,21 +4,61 @@
 	import { auth, isAuthenticated } from '$lib/stores/auth';
 	import { novels } from '$lib/stores/novels';
 	import { exportService } from '$lib/services/exportService';
+	import { profileService } from '$lib/services/profileService';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
 	import { toast } from '$lib/components/ui/Toast.svelte';
+	import type { Profile } from '$lib/types';
 	
 	let importing = false;
 	let exporting = false;
+	let savingProfile = false;
 	let fileInput: HTMLInputElement;
+	let profile: Profile | null = null;
+	let displayName = '';
+	let publicNovelCount = 0;
+	
+	$: profileUrl = $auth.user ? `${typeof window !== 'undefined' ? window.location.origin : ''}/user/${$auth.user.id}` : '';
 	
 	onMount(() => {
-		const unsubscribe = auth.subscribe((state) => {
-			if (!state.loading && !state.user) {
-				goto('/auth/login');
+		const unsubscribe = auth.subscribe(async (state) => {
+			if (!state.loading) {
+				if (!state.user) {
+					goto('/auth/login');
+				} else {
+					await loadProfile();
+				}
 			}
 		});
 		return unsubscribe;
 	});
+	
+	async function loadProfile() {
+		if (!$auth.user) return;
+		profile = await profileService.getProfile($auth.user.id);
+		displayName = profile?.display_name || '';
+		
+		// Count public novels
+		const publicNovels = await profileService.getPublicNovels($auth.user.id);
+		publicNovelCount = publicNovels.length;
+	}
+	
+	async function saveProfile() {
+		savingProfile = true;
+		try {
+			await profileService.updateProfile({ display_name: displayName.trim() || undefined });
+			toast('Profile updated!', 'success');
+		} catch (err) {
+			toast('Failed to update profile', 'error');
+		} finally {
+			savingProfile = false;
+		}
+	}
+	
+	function copyProfileLink() {
+		navigator.clipboard.writeText(profileUrl);
+		toast('Profile link copied!', 'success');
+	}
 	
 	async function handleExport() {
 		exporting = true;
@@ -70,16 +110,52 @@
 	</div>
 {:else}
 	<div class="max-w-2xl mx-auto px-4 py-8">
-		<h1 class="text-2xl font-bold text-gray-100 mb-6">Settings</h1>
+		<h1 class="text-2xl font-bold mb-6">Settings</h1>
+		
+		<!-- Public Profile -->
+		<div class="card mb-6">
+			<h2 class="text-lg font-semibold mb-4">Public Profile</h2>
+			
+			<div class="space-y-4">
+				<Input 
+					id="displayName"
+					label="Display Name"
+					bind:value={displayName}
+					placeholder="Your public display name"
+				/>
+				
+				<div class="flex gap-3">
+					<Button on:click={saveProfile} disabled={savingProfile}>
+						{savingProfile ? 'Saving...' : 'Save Profile'}
+					</Button>
+				</div>
+				
+				<hr class="border-gray-700" />
+				
+				<div>
+					<h3 class="text-sm font-medium mb-2">Your Public Profile</h3>
+					<p class="text-sm text-muted mb-3">
+						You have {publicNovelCount} public novel{publicNovelCount !== 1 ? 's' : ''}. 
+						Share your profile link with others to show your reading list.
+					</p>
+					<div class="flex gap-2">
+						<a href="/user/{$auth.user?.id}" class="flex-1">
+							<Button variant="secondary" class="w-full">View Profile</Button>
+						</a>
+						<Button on:click={copyProfileLink}>Copy Link</Button>
+					</div>
+				</div>
+			</div>
+		</div>
 		
 		<!-- Data Management -->
 		<div class="card mb-6">
-			<h2 class="text-lg font-semibold text-gray-100 mb-4">Data Management</h2>
+			<h2 class="text-lg font-semibold mb-4">Data Management</h2>
 			
 			<div class="space-y-4">
 				<div>
-					<h3 class="text-sm font-medium text-gray-300 mb-2">Export Data</h3>
-					<p class="text-sm text-gray-400 mb-3">
+					<h3 class="text-sm font-medium mb-2">Export Data</h3>
+					<p class="text-sm text-muted mb-3">
 						Download all your novels and tier lists as a JSON file for backup.
 					</p>
 					<Button on:click={handleExport} disabled={exporting}>
@@ -90,8 +166,8 @@
 				<hr class="border-gray-700" />
 				
 				<div>
-					<h3 class="text-sm font-medium text-gray-300 mb-2">Import Data</h3>
-					<p class="text-sm text-gray-400 mb-3">
+					<h3 class="text-sm font-medium mb-2">Import Data</h3>
+					<p class="text-sm text-muted mb-3">
 						Import novels from a previously exported JSON file. Data will be merged with existing.
 					</p>
 					<input 
@@ -114,8 +190,8 @@
 		
 		<!-- API Access -->
 		<div class="card mb-6">
-			<h2 class="text-lg font-semibold text-gray-100 mb-4">API Access</h2>
-			<p class="text-sm text-gray-400 mb-4">
+			<h2 class="text-lg font-semibold mb-4">API Access</h2>
+			<p class="text-sm text-muted mb-4">
 				Connect your novel reader app or build integrations with the MyNovelList API.
 			</p>
 			<div class="flex gap-3">
@@ -130,9 +206,9 @@
 		
 		<!-- Account -->
 		<div class="card">
-			<h2 class="text-lg font-semibold text-gray-100 mb-4">Account</h2>
-			<p class="text-sm text-gray-400 mb-4">
-				Signed in as <span class="text-gray-200">{$auth.user?.email}</span>
+			<h2 class="text-lg font-semibold mb-4">Account</h2>
+			<p class="text-sm text-muted mb-4">
+				Signed in as <span class="font-medium">{$auth.user?.email}</span>
 			</p>
 			<Button variant="secondary" on:click={() => auth.signOut()}>
 				Sign Out

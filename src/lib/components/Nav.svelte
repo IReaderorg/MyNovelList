@@ -23,6 +23,12 @@
 			
 			<!-- Desktop Nav -->
 			<div class="hidden md:flex items-center gap-6">
+				<a 
+					href="/browse" 
+					class="transition-colors {$page.url.pathname === '/browse' ? 'text-primary-400' : 'text-gray-300 hover:text-white dark:text-gray-300 dark:hover:text-white'}"
+				>
+					Browse
+				</a>
 				{#if $isAuthenticated}
 					<a 
 						href="/library" 
@@ -82,6 +88,7 @@
 		{#if menuOpen}
 			<div class="md:hidden py-4 border-t border-gray-700">
 				<div class="flex flex-col gap-3">
+					<a href="/browse" class="text-gray-300 hover:text-white transition-colors py-2">Browse</a>
 					{#if $isAuthenticated}
 						<a href="/library" class="text-gray-300 hover:text-white transition-colors py-2">Library</a>
 						<a href="/tier-lists" class="text-gray-300 hover:text-white transition-colors py-2">Tier Lists</a>

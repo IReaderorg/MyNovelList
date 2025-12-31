@@ -12,7 +12,7 @@
 	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import { toast } from '$lib/components/ui/Toast.svelte';
-	import type { NovelInput } from '$lib/types';
+	import type { NovelInput, ProgressInput } from '$lib/types';
 	
 	let showAddModal = false;
 	let addLoading = false;
@@ -31,12 +31,12 @@
 		return unsubscribe;
 	});
 	
-	async function handleAddNovel(e: CustomEvent<NovelInput>) {
+	async function handleAddNovel(e: CustomEvent<{ novel: NovelInput; progress: ProgressInput }>) {
 		addLoading = true;
 		try {
-			await novels.add(e.detail);
+			await novels.add(e.detail.novel, e.detail.progress);
 			showAddModal = false;
-			toast('Novel added!', 'success');
+			toast('Novel added to library!', 'success');
 		} catch (err) {
 			toast('Failed to add novel', 'error');
 		} finally {
