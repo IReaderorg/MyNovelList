@@ -21,7 +21,7 @@ async function validateRequest(request: Request): Promise<{ userId: string; scop
 	return validation;
 }
 
-// GET /api/v1/novels/:id - Get a single novel
+// GET /api/v1/novels/:id - Get a single novel with user's progress
 export const GET: RequestHandler = async ({ request, params }) => {
 	const auth = await validateRequest(request);
 	if (auth instanceof Response) return auth;
@@ -30,21 +30,29 @@ export const GET: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'API key does not have read permission' }, { status: 403 });
 	}
 
-	const { data, error } = await supabase
+	// Get novel (public)
+	const { data: novel, error } = await supabase
 		.from('novels')
 		.select('*')
 		.eq('id', params.id)
-		.eq('user_id', auth.userId)
 		.single();
 
-	if (error) {
+	if (error || !novel) {
 		return json({ success: false, error: 'Novel not found' }, { status: 404 });
 	}
 
-	return json({ success: true, data });
+	// Get user's progress (private)
+	const { data: progress } = await supabase
+		.from('novel_progress')
+		.select('*')
+		.eq('novel_id', params.id)
+		.eq('user_id', auth.userId)
+		.single();
+
+	return json({ success: true, data: { ...novel, progress } });
 };
 
-// PUT /api/v1/novels/:id - Update a novel
+// PUT /api/v1/novels/:id - Update novel metadata (only creator can update)
 export const PUT: RequestHandler = async ({ request, params }) => {
 	const auth = await validateRequest(request);
 	if (auth instanceof Response) return auth;
@@ -60,22 +68,39 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
 	}
 
-	const { data, error } = await supabase
+	// Only update novel metadata fields
+	const novelUpdates: Record<string, any> = {
+		updated_at: new Date().toISOString()
+	};
+
+	if (body.title !== undefined) novelUpdates.title = body.title;
+	if (body.author !== undefined) novelUpdates.author = body.author;
+	if (body.cover_url !== undefined) novelUpdates.cover_url = body.cover_url;
+	if (body.source_url !== undefined) novelUpdates.source_url = body.source_url;
+	if (body.total_chapters !== undefined) novelUpdates.total_chapters = body.total_chapters;
+	if (body.tags !== undefined) novelUpdates.tags = body.tags;
+
+	const { data: novel, error } = await supabase
 		.from('novels')
-		.update({
-			...body,
-			updated_at: new Date().toISOString()
-		})
+		.update(novelUpdates)
 		.eq('id', params.id)
-		.eq('user_id', auth.userId)
+		.eq('user_id', auth.userId) // Only creator can update
 		.select()
 		.single();
 
-	if (error) {
-		return json({ success: false, error: 'Novel not found or update failed' }, { status: 404 });
+	if (error || !novel) {
+		return json({ success: false, error: 'Novel not found or you are not the creator' }, { status: 404 });
 	}
 
-	return json({ success: true, data });
+	// Get user's progress
+	const { data: progress } = await supabase
+		.from('novel_progress')
+		.select('*')
+		.eq('novel_id', params.id)
+		.eq('user_id', auth.userId)
+		.single();
+
+	return json({ success: true, data: { ...novel, progress } });
 };
 
 // PATCH /api/v1/novels/:id - Partial update (useful for chapter updates)
@@ -94,25 +119,54 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
 	}
 
-	const { data, error } = await supabase
+	// Get novel first
+	const { data: existingNovel } = await supabase
 		.from('novels')
-		.update({
-			...body,
-			updated_at: new Date().toISOString()
-		})
+		.select('*')
 		.eq('id', params.id)
-		.eq('user_id', auth.userId)
-		.select()
 		.single();
 
-	if (error) {
-		return json({ success: false, error: 'Novel not found or update failed' }, { status: 404 });
+	if (!existingNovel) {
+		return json({ success: false, error: 'Novel not found' }, { status: 404 });
 	}
 
-	return json({ success: true, data });
+	// Update novel metadata if user is creator
+	let novel = existingNovel;
+	if (existingNovel.user_id === auth.userId) {
+		const novelUpdates: Record<string, any> = {
+			updated_at: new Date().toISOString()
+		};
+
+		if (body.title !== undefined) novelUpdates.title = body.title;
+		if (body.author !== undefined) novelUpdates.author = body.author;
+		if (body.cover_url !== undefined) novelUpdates.cover_url = body.cover_url;
+		if (body.source_url !== undefined) novelUpdates.source_url = body.source_url;
+		if (body.total_chapters !== undefined) novelUpdates.total_chapters = body.total_chapters;
+		if (body.tags !== undefined) novelUpdates.tags = body.tags;
+
+		if (Object.keys(novelUpdates).length > 1) {
+			const { data } = await supabase
+				.from('novels')
+				.update(novelUpdates)
+				.eq('id', params.id)
+				.select()
+				.single();
+			if (data) novel = data;
+		}
+	}
+
+	// Get user's progress
+	const { data: progress } = await supabase
+		.from('novel_progress')
+		.select('*')
+		.eq('novel_id', params.id)
+		.eq('user_id', auth.userId)
+		.single();
+
+	return json({ success: true, data: { ...novel, progress } });
 };
 
-// DELETE /api/v1/novels/:id - Delete a novel
+// DELETE /api/v1/novels/:id - Remove from user's library (not delete novel)
 export const DELETE: RequestHandler = async ({ request, params }) => {
 	const auth = await validateRequest(request);
 	if (auth instanceof Response) return auth;
@@ -121,15 +175,16 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 		return json({ success: false, error: 'API key does not have delete permission' }, { status: 403 });
 	}
 
+	// Remove from user's library (delete progress)
 	const { error } = await supabase
-		.from('novels')
+		.from('novel_progress')
 		.delete()
-		.eq('id', params.id)
+		.eq('novel_id', params.id)
 		.eq('user_id', auth.userId);
 
 	if (error) {
-		return json({ success: false, error: 'Novel not found or delete failed' }, { status: 404 });
+		return json({ success: false, error: 'Failed to remove from library' }, { status: 500 });
 	}
 
-	return json({ success: true, data: { deleted: true } });
+	return json({ success: true, data: { removed: true } });
 };
