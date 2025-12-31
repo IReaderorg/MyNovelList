@@ -112,6 +112,22 @@
 			</div>
 		</div>
 		
+		<!-- API Access -->
+		<div class="card mb-6">
+			<h2 class="text-lg font-semibold text-gray-100 mb-4">API Access</h2>
+			<p class="text-sm text-gray-400 mb-4">
+				Connect your novel reader app or build integrations with the MyNovelList API.
+			</p>
+			<div class="flex gap-3">
+				<a href="/settings/api">
+					<Button>Manage API Keys</Button>
+				</a>
+				<a href="/docs/api">
+					<Button variant="secondary">View API Docs</Button>
+				</a>
+			</div>
+		</div>
+		
 		<!-- Account -->
 		<div class="card">
 			<h2 class="text-lg font-semibold text-gray-100 mb-4">Account</h2>

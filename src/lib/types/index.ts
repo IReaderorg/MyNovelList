@@ -86,3 +86,36 @@ export interface ExportData {
 	novels: Novel[];
 	tier_lists: TierListWithItems[];
 }
+
+export type ApiScope = 'read' | 'write' | 'delete';
+
+export interface ApiKey {
+	id: string;
+	user_id: string;
+	name: string;
+	key_prefix: string;
+	scopes: ApiScope[];
+	last_used_at?: string;
+	request_count: number;
+	is_active: boolean;
+	created_at: string;
+	expires_at?: string;
+}
+
+export interface ApiKeyWithSecret extends ApiKey {
+	secret: string; // Only returned on creation
+}
+
+// API Response types
+export interface ApiResponse<T> {
+	success: boolean;
+	data?: T;
+	error?: string;
+}
+
+export interface ApiNovelListResponse {
+	novels: Novel[];
+	total: number;
+	page: number;
+	per_page: number;
+}
