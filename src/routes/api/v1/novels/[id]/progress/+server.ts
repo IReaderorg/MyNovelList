@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { supabaseAdmin } from '$lib/services/supabaseAdmin';
-import { apiKeyService } from '$lib/services/apiKeyService';
+import { validateApiKey } from '$lib/services/apiKeyValidator.server';
 import type { ProgressInput } from '$lib/types';
 
 async function validateRequest(request: Request): Promise<{ userId: string; scopes: string[] } | Response> {
@@ -12,7 +12,7 @@ async function validateRequest(request: Request): Promise<{ userId: string; scop
 	}
 
 	const apiKey = authHeader.substring(7);
-	const validation = await apiKeyService.validateKey(apiKey);
+	const validation = await validateApiKey(apiKey);
 
 	if (!validation) {
 		return json({ success: false, error: 'Invalid or expired API key' }, { status: 401 });

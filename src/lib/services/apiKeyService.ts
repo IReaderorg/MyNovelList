@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { supabaseAdmin } from './supabaseAdmin';
 import type { ApiKey, ApiKeyWithSecret, ApiScope } from '$lib/types';
 
 // Generate a secure random API key
@@ -14,7 +13,7 @@ function generateApiKey(): string {
 }
 
 // Simple hash function for API key storage
-async function hashApiKey(key: string): Promise<string> {
+export async function hashApiKey(key: string): Promise<string> {
 	const encoder = new TextEncoder();
 	const data = encoder.encode(key);
 	const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -69,31 +68,5 @@ export const apiKeyService = {
 			.update({ is_active: isActive })
 			.eq('id', id);
 		if (error) throw error;
-	},
-
-	// Validate API key and return user_id if valid
-	async validateKey(apiKey: string): Promise<{ userId: string; scopes: ApiScope[] } | null> {
-		const keyHash = await hashApiKey(apiKey);
-		
-		const { data, error } = await supabaseAdmin
-			.from('api_keys')
-			.select('id, user_id, scopes, is_active, expires_at, request_count')
-			.eq('key_hash', keyHash)
-			.single();
-
-		if (error || !data) return null;
-		if (!data.is_active) return null;
-		if (data.expires_at && new Date(data.expires_at) < new Date()) return null;
-
-		// Update usage stats
-		await supabaseAdmin
-			.from('api_keys')
-			.update({ 
-				last_used_at: new Date().toISOString(),
-				request_count: data.request_count + 1
-			})
-			.eq('id', data.id);
-
-		return { userId: data.user_id, scopes: data.scopes };
 	}
 };
