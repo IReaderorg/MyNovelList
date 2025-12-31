@@ -1,0 +1,88 @@
+export type NovelStatus = 'planning' | 'reading' | 'completed' | 'on_hold' | 'dropped';
+
+export interface Novel {
+	id: string;
+	user_id: string;
+	title: string;
+	author?: string;
+	cover_url?: string;
+	source_url?: string;
+	status: NovelStatus;
+	current_chapter: number;
+	total_chapters?: number;
+	score?: number;
+	notes?: string;
+	tags: string[];
+	started_at?: string;
+	completed_at?: string;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface NovelInput {
+	title: string;
+	author?: string;
+	cover_url?: string;
+	source_url?: string;
+	status?: NovelStatus;
+	current_chapter?: number;
+	total_chapters?: number;
+	score?: number;
+	notes?: string;
+	tags?: string[];
+	started_at?: string;
+	completed_at?: string;
+}
+
+export interface TierConfig {
+	name: string;
+	color: string;
+}
+
+export interface TierList {
+	id: string;
+	user_id: string;
+	title: string;
+	description?: string;
+	is_public: boolean;
+	tiers: TierConfig[];
+	created_at: string;
+	updated_at: string;
+}
+
+export interface TierListItem {
+	id: string;
+	tier_list_id: string;
+	novel_id?: string;
+	title?: string;
+	cover_url?: string;
+	tier_name: string;
+	position: number;
+	created_at: string;
+	// Joined data
+	novel?: Novel;
+}
+
+export interface TierListWithItems extends TierList {
+	items: TierListItem[];
+}
+
+export interface FilterOptions {
+	status?: NovelStatus | 'all';
+	scoreMin?: number;
+	scoreMax?: number;
+	tags?: string[];
+	search?: string;
+}
+
+export interface SortOptions {
+	field: 'title' | 'score' | 'created_at' | 'updated_at' | 'current_chapter';
+	direction: 'asc' | 'desc';
+}
+
+export interface ExportData {
+	version: string;
+	exported_at: string;
+	novels: Novel[];
+	tier_lists: TierListWithItems[];
+}
