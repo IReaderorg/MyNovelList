@@ -7,6 +7,7 @@
 	
 	let chapterInput = novel.current_chapter;
 	let debounceTimer: ReturnType<typeof setTimeout>;
+	let imgError = false;
 	
 	const statusColors: Record<string, string> = {
 		planning: 'bg-gray-600',
@@ -38,18 +39,23 @@
 		if (!novel.total_chapters || novel.total_chapters === 0) return 0;
 		return Math.min(100, (novel.current_chapter / novel.total_chapters) * 100);
 	}
+	
+	function handleImgError() {
+		imgError = true;
+	}
 </script>
 
 <div class="card hover:border-gray-600 transition-colors group">
 	<div class="flex gap-4">
 		<!-- Cover -->
 		<div class="flex-shrink-0 w-20 h-28 bg-gray-700 rounded-lg overflow-hidden">
-			{#if novel.cover_url}
+			{#if novel.cover_url && !imgError}
 				<img 
 					src={novel.cover_url} 
 					alt={novel.title}
 					class="w-full h-full object-cover"
 					loading="lazy"
+					on:error={handleImgError}
 				/>
 			{:else}
 				<div class="w-full h-full flex items-center justify-center text-gray-500">
@@ -78,8 +84,20 @@
 				</span>
 			</div>
 			
+			<!-- Tags -->
+			{#if novel.tags && novel.tags.length > 0}
+				<div class="mt-1 flex flex-wrap gap-1">
+					{#each novel.tags.slice(0, 3) as tag}
+						<span class="px-1.5 py-0.5 text-xs bg-gray-700 text-gray-400 rounded">{tag}</span>
+					{/each}
+					{#if novel.tags.length > 3}
+						<span class="text-xs text-gray-500">+{novel.tags.length - 3}</span>
+					{/if}
+				</div>
+			{/if}
+			
 			<!-- Chapter Progress -->
-			<div class="mt-3 flex items-center gap-2">
+			<div class="mt-2 flex items-center gap-2">
 				<label class="text-sm text-gray-400">Ch.</label>
 				<input
 					type="number"

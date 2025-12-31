@@ -42,6 +42,11 @@ function createTierListsStore() {
 		delete: async (id: string) => {
 			await tierListService.delete(id);
 			update((s) => ({ ...s, tierLists: s.tierLists.filter((t) => t.id !== id) }));
+		},
+		clone: async (id: string) => {
+			const cloned = await tierListService.clone(id);
+			update((s) => ({ ...s, tierLists: [cloned, ...s.tierLists] }));
+			return cloned;
 		}
 	};
 }

@@ -16,10 +16,12 @@
 	let source_url = novel?.source_url ?? '';
 	let status: NovelStatus = novel?.status ?? 'planning';
 	let current_chapter = novel?.current_chapter ?? 0;
-	let total_chapters = novel?.total_chapters ?? undefined;
-	let score = novel?.score ?? undefined;
+	let total_chapters: number | undefined = novel?.total_chapters ?? undefined;
+	let score: number | undefined = novel?.score ?? undefined;
 	let notes = novel?.notes ?? '';
 	let tags = novel?.tags?.join(', ') ?? '';
+	let started_at = novel?.started_at ?? '';
+	let completed_at = novel?.completed_at ?? '';
 	
 	const statusOptions = [
 		{ value: 'planning', label: 'Planning' },
@@ -42,10 +44,20 @@
 			total_chapters: total_chapters || undefined,
 			score: score !== undefined ? Math.min(100, Math.max(0, score)) : undefined,
 			notes: notes.trim() || undefined,
-			tags: tags.split(',').map(t => t.trim()).filter(Boolean)
+			tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+			started_at: started_at || undefined,
+			completed_at: completed_at || undefined
 		};
 		
 		dispatch('submit', input);
+	}
+	
+	// Auto-set dates based on status
+	$: if (status === 'reading' && !started_at) {
+		started_at = new Date().toISOString().split('T')[0];
+	}
+	$: if (status === 'completed' && !completed_at) {
+		completed_at = new Date().toISOString().split('T')[0];
 	}
 </script>
 
@@ -116,6 +128,28 @@
 			max={100}
 			placeholder="Optional"
 		/>
+	</div>
+	
+	<div class="grid grid-cols-2 gap-4">
+		<div>
+			<label for="started_at" class="block text-sm font-medium text-gray-300 mb-1">Started Date</label>
+			<input
+				id="started_at"
+				type="date"
+				bind:value={started_at}
+				class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+			/>
+		</div>
+		
+		<div>
+			<label for="completed_at" class="block text-sm font-medium text-gray-300 mb-1">Completed Date</label>
+			<input
+				id="completed_at"
+				type="date"
+				bind:value={completed_at}
+				class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+			/>
+		</div>
 	</div>
 	
 	<Input 

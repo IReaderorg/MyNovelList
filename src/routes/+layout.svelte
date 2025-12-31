@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { auth } from '$lib/stores/auth';
+	import { theme } from '$lib/stores/theme';
 	import Nav from '$lib/components/Nav.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import '../app.css';
 	
 	onMount(() => {
 		auth.init();
+		theme.init();
 	});
 </script>
 

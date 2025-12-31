@@ -145,5 +145,49 @@ export const tierListService = {
 	async removeItem(itemId: string): Promise<void> {
 		const { error } = await supabase.from('tier_list_items').delete().eq('id', itemId);
 		if (error) throw error;
+	},
+
+	async clone(id: string): Promise<TierList> {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) throw new Error('Not authenticated');
+
+		// Get original tier list with items
+		const original = await this.getById(id);
+		if (!original) throw new Error('Tier list not found');
+
+		// Create new tier list
+		const { data: newTierList, error: createError } = await supabase
+			.from('tier_lists')
+			.insert({
+				user_id: user.id,
+				title: `${original.title} (Copy)`,
+				description: original.description,
+				tiers: original.tiers,
+				is_public: false
+			})
+			.select()
+			.single();
+
+		if (createError) throw createError;
+
+		// Clone items
+		if (original.items.length > 0) {
+			const newItems = original.items.map(item => ({
+				tier_list_id: newTierList.id,
+				tier_name: item.tier_name,
+				novel_id: item.novel_id,
+				title: item.title,
+				cover_url: item.cover_url,
+				position: item.position
+			}));
+
+			const { error: itemsError } = await supabase
+				.from('tier_list_items')
+				.insert(newItems);
+
+			if (itemsError) throw itemsError;
+		}
+
+		return newTierList;
 	}
 };

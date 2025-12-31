@@ -6,25 +6,127 @@
 	html {
 		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	}
+	
+	/* Dark mode (default) */
+	html.dark {
+		--bg-primary: #111827;
+		--bg-secondary: #1f2937;
+		--bg-tertiary: #374151;
+		--text-primary: #f3f4f6;
+		--text-secondary: #9ca3af;
+		--text-muted: #6b7280;
+		--border-color: #374151;
+		color-scheme: dark;
+	}
+	
+	/* Light mode */
+	html.light {
+		--bg-primary: #ffffff;
+		--bg-secondary: #f9fafb;
+		--bg-tertiary: #f3f4f6;
+		--text-primary: #111827;
+		--text-secondary: #4b5563;
+		--text-muted: #9ca3af;
+		--border-color: #e5e7eb;
+		color-scheme: light;
+	}
+	
+	body {
+		background-color: var(--bg-primary);
+		color: var(--text-primary);
+	}
 }
 
 @layer components {
 	.btn {
-		@apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900;
+		@apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
 	}
 	.btn-primary {
 		@apply bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500;
 	}
 	.btn-secondary {
-		@apply bg-gray-700 hover:bg-gray-600 text-gray-100 focus:ring-gray-500;
+		@apply focus:ring-gray-500;
 	}
 	.btn-danger {
 		@apply bg-red-600 hover:bg-red-700 text-white focus:ring-red-500;
 	}
+	
+	/* Dark mode styles */
+	html.dark .btn-secondary {
+		@apply bg-gray-700 hover:bg-gray-600 text-gray-100;
+	}
+	html.dark .btn {
+		@apply focus:ring-offset-gray-900;
+	}
+	html.dark .input {
+		@apply bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500;
+	}
+	html.dark .card {
+		@apply bg-gray-800 border-gray-700;
+	}
+	html.dark .text-muted {
+		@apply text-gray-400;
+	}
+	
+	/* Light mode styles */
+	html.light .btn-secondary {
+		@apply bg-gray-200 hover:bg-gray-300 text-gray-800;
+	}
+	html.light .btn {
+		@apply focus:ring-offset-white;
+	}
+	html.light .input {
+		@apply bg-white border-gray-300 text-gray-900 placeholder-gray-400;
+	}
+	html.light .card {
+		@apply bg-white border-gray-200 shadow-sm;
+	}
+	html.light .text-muted {
+		@apply text-gray-500;
+	}
+	html.light .text-gray-100 {
+		@apply text-gray-900;
+	}
+	html.light .text-gray-300 {
+		@apply text-gray-600;
+	}
+	html.light .text-gray-400 {
+		@apply text-gray-500;
+	}
+	html.light .bg-gray-700 {
+		@apply bg-gray-200;
+	}
+	html.light .bg-gray-800 {
+		@apply bg-gray-100;
+	}
+	html.light .border-gray-700 {
+		@apply border-gray-200;
+	}
+	
 	.input {
-		@apply w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+		@apply w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
 	}
 	.card {
-		@apply bg-gray-800 rounded-xl border border-gray-700 p-4;
+		@apply rounded-xl border p-4;
 	}
+}
+
+/* Light mode overrides for specific elements */
+html.light nav {
+	@apply bg-white border-gray-200;
+}
+
+html.light footer {
+	@apply border-gray-200 text-gray-500;
+}
+
+/* Light mode select and textarea */
+html.light select,
+html.light textarea {
+	@apply bg-white border-gray-300 text-gray-900;
+}
+
+/* Light mode modal */
+html.light .modal-content {
+	@apply bg-white;
 }

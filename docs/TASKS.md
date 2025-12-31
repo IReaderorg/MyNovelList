@@ -11,8 +11,8 @@
 ## Phase 2: Database & Auth ✅
 - [x] Create Supabase migration files
 - [x] Implement Supabase client
-- [x] Setup authentication (email + OAuth)
-- [x] Create auth pages (login, signup, callback)
+- [x] Setup authentication (email/password)
+- [x] Create auth pages (login, signup, forgot-password, reset-password)
 - [x] Implement auth store
 - [x] Add protected route handling
 
@@ -22,18 +22,15 @@
 - [x] Build NovelForm component
 - [x] Build NovelCard component
 - [x] Build NovelList component
+- [x] Build NovelGrid component (grid view)
 - [x] Implement library page with filters
 - [x] Add search functionality
 - [x] Implement sorting options
-- [ ] Add pagination (deferred - infinite scroll works for MVP)
+- [x] Add tag filtering UI
+- [x] Add start/end date tracking
+- [x] Add image fallback for broken covers
 
-## Phase 4: Local Storage Mode ✅
-- [x] Create localStorage adapter
-- [x] Implement offline-first store
-- [x] Add sync-to-cloud on signup
-- [ ] Handle merge conflicts (basic merge implemented)
-
-## Phase 5: Tier Lists ✅
+## Phase 4: Tier Lists ✅
 - [x] Create tier list service
 - [x] Build TierList component
 - [x] Build TierRow component
@@ -41,81 +38,71 @@
 - [x] Add public/private toggle
 - [x] Create shareable link system
 - [x] Build public view page
+- [x] Add drag & drop for tier lists
+- [x] Add custom tier labels/colors
+- [x] Add clone tier list functionality
 
-## Phase 6: Data Management ✅
+## Phase 5: Data Management ✅
 - [x] Implement JSON export
 - [x] Implement JSON import
-- [ ] Add CSV export (optional - deferred)
 - [x] Build settings page
 - [x] Add data validation
 
-## Phase 7: Polish & Deploy
-- [x] Add loading states
+## Phase 6: Developer API ✅
+- [x] API key generation/management
+- [x] REST API endpoints (novels, tier-lists)
+- [x] API documentation page
+- [x] Scoped permissions (read, write, delete)
+
+## Phase 7: UI/UX Polish ✅
+- [x] Add loading states (skeletons)
 - [x] Add error handling
 - [x] Implement toast notifications
 - [x] Add dark mode (default)
+- [x] Add light mode toggle
 - [x] Mobile responsiveness
-- [ ] Performance optimization
-- [ ] Deploy to Vercel
-- [ ] Setup Supabase production
+- [x] Mobile nav auto-close
+- [x] Empty state components
+- [x] Statistics dashboard
+
+## Phase 8: Deployment ✅
+- [x] Configure Netlify adapter
+- [x] Create deployment documentation
+- [x] Setup environment variables
 
 ---
 
-## Current Sprint: Phase 1 & 2 (Foundation)
+## Completed Features Summary
 
-### Task 1.1: Initialize SvelteKit Project
-```bash
-npm create svelte@latest novel-tracker
-# Select: Skeleton project, TypeScript, ESLint, Prettier
-cd novel-tracker
-npm install
-```
+### Core Features
+- Novel tracking with title, author, cover, source URL, status, chapters, score, tags, notes
+- Start/end date tracking for novels
+- Grid and list view modes
+- Advanced filtering (status, tags, search)
+- Sorting by multiple fields
 
-### Task 1.2: Install Dependencies
-```bash
-npm install @supabase/supabase-js
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
+### Tier Lists
+- Create, edit, delete tier lists
+- Drag & drop items between tiers
+- Custom tier labels and colors
+- Clone tier lists
+- Public/private sharing
 
-### Task 1.3: Configure Tailwind
-- Update tailwind.config.js
-- Add Tailwind directives to app.css
-- Configure dark mode
+### User Features
+- Email/password authentication
+- Password reset flow
+- JSON export/import for backups
+- Statistics dashboard
+- Dark/light mode toggle
 
-### Task 1.4: Environment Setup
-- Create .env.example with Supabase keys
-- Add .env to .gitignore
+### Developer API
+- API key management with scopes
+- REST endpoints for novels and tier lists
+- API documentation
 
-### Task 1.5: Create Base Layout
-- Navigation component
-- Main layout with header
-- Footer component
-
-### Task 1.6: Setup Supabase
-- Create migration file with schema
-- Initialize Supabase client
-- Configure RLS policies
-
-### Task 1.7: Authentication
-- Create auth store
-- Login page
-- Signup page
-- OAuth callback handler
-- Protected route wrapper
-
----
-
-## Estimated Timeline
-
-| Phase | Duration | Cumulative |
-|-------|----------|------------|
-| Phase 1 | 1 hour | 1 hour |
-| Phase 2 | 2 hours | 3 hours |
-| Phase 3 | 3 hours | 6 hours |
-| Phase 4 | 1 hour | 7 hours |
-| Phase 5 | 2 hours | 9 hours |
-| Phase 6 | 1 hour | 10 hours |
-| Phase 7 | 2 hours | 12 hours |
-
-**Total estimated: ~12 hours for MVP**
+### UI/UX
+- Loading skeletons
+- Empty states
+- Toast notifications
+- Mobile responsive
+- Image fallbacks

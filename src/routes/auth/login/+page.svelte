@@ -69,5 +69,9 @@
 			Don't have an account? 
 			<a href="/auth/signup" class="text-primary-400 hover:text-primary-300">Sign up</a>
 		</p>
+		
+		<p class="mt-2 text-center text-sm text-gray-400">
+			<a href="/auth/forgot-password" class="text-primary-400 hover:text-primary-300">Forgot password?</a>
+		</p>
 	</div>
 </div>

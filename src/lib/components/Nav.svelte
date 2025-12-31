@@ -1,11 +1,16 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { auth, isAuthenticated } from '$lib/stores/auth';
 	import Button from './ui/Button.svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 	
 	let menuOpen = false;
+	
+	// Close menu on route change
+	$: $page.url.pathname, menuOpen = false;
 </script>
 
-<nav class="bg-gray-800 border-b border-gray-700">
+<nav class="border-b bg-gray-800 border-gray-700 dark:bg-gray-800 dark:border-gray-700">
 	<div class="max-w-6xl mx-auto px-4">
 		<div class="flex items-center justify-between h-16">
 			<!-- Logo -->
@@ -19,13 +24,36 @@
 			<!-- Desktop Nav -->
 			<div class="hidden md:flex items-center gap-6">
 				{#if $isAuthenticated}
-					<a href="/library" class="text-gray-300 hover:text-white transition-colors">Library</a>
-					<a href="/tier-lists" class="text-gray-300 hover:text-white transition-colors">Tier Lists</a>
-					<a href="/settings" class="text-gray-300 hover:text-white transition-colors">Settings</a>
+					<a 
+						href="/library" 
+						class="transition-colors {$page.url.pathname === '/library' ? 'text-primary-400' : 'text-gray-300 hover:text-white dark:text-gray-300 dark:hover:text-white'}"
+					>
+						Library
+					</a>
+					<a 
+						href="/tier-lists" 
+						class="transition-colors {$page.url.pathname.startsWith('/tier-lists') ? 'text-primary-400' : 'text-gray-300 hover:text-white dark:text-gray-300 dark:hover:text-white'}"
+					>
+						Tier Lists
+					</a>
+					<a 
+						href="/stats" 
+						class="transition-colors {$page.url.pathname === '/stats' ? 'text-primary-400' : 'text-gray-300 hover:text-white dark:text-gray-300 dark:hover:text-white'}"
+					>
+						Stats
+					</a>
+					<a 
+						href="/settings" 
+						class="transition-colors {$page.url.pathname.startsWith('/settings') ? 'text-primary-400' : 'text-gray-300 hover:text-white dark:text-gray-300 dark:hover:text-white'}"
+					>
+						Settings
+					</a>
+					<ThemeToggle />
 					<Button variant="ghost" size="sm" on:click={() => auth.signOut()}>
 						Sign Out
 					</Button>
 				{:else}
+					<ThemeToggle />
 					<a href="/auth/login">
 						<Button variant="secondary" size="sm">Sign In</Button>
 					</a>
@@ -55,18 +83,25 @@
 			<div class="md:hidden py-4 border-t border-gray-700">
 				<div class="flex flex-col gap-3">
 					{#if $isAuthenticated}
-						<a href="/library" class="text-gray-300 hover:text-white transition-colors py-2" on:click={() => menuOpen = false}>Library</a>
-						<a href="/tier-lists" class="text-gray-300 hover:text-white transition-colors py-2" on:click={() => menuOpen = false}>Tier Lists</a>
-						<a href="/settings" class="text-gray-300 hover:text-white transition-colors py-2" on:click={() => menuOpen = false}>Settings</a>
+						<a href="/library" class="text-gray-300 hover:text-white transition-colors py-2">Library</a>
+						<a href="/tier-lists" class="text-gray-300 hover:text-white transition-colors py-2">Tier Lists</a>
+						<a href="/stats" class="text-gray-300 hover:text-white transition-colors py-2">Stats</a>
+						<a href="/settings" class="text-gray-300 hover:text-white transition-colors py-2">Settings</a>
+						<div class="py-2">
+							<ThemeToggle />
+						</div>
 						<button 
 							class="text-left text-gray-300 hover:text-white transition-colors py-2"
-							on:click={() => { auth.signOut(); menuOpen = false; }}
+							on:click={() => auth.signOut()}
 						>
 							Sign Out
 						</button>
 					{:else}
-						<a href="/auth/login" class="text-gray-300 hover:text-white transition-colors py-2" on:click={() => menuOpen = false}>Sign In</a>
-						<a href="/auth/signup" class="text-gray-300 hover:text-white transition-colors py-2" on:click={() => menuOpen = false}>Sign Up</a>
+						<div class="py-2">
+							<ThemeToggle />
+						</div>
+						<a href="/auth/login" class="text-gray-300 hover:text-white transition-colors py-2">Sign In</a>
+						<a href="/auth/signup" class="text-gray-300 hover:text-white transition-colors py-2">Sign Up</a>
 					{/if}
 				</div>
 			</div>

@@ -8,16 +8,25 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import { toast } from '$lib/components/ui/Toast.svelte';
-	import type { TierListWithItems, TierListItem } from '$lib/types';
+	import type { TierListWithItems, TierListItem, TierConfig } from '$lib/types';
 	
 	let tierList: TierListWithItems | null = null;
 	let loading = true;
 	let showAddModal = false;
+	let showEditTiersModal = false;
 	let addTitle = '';
 	let addCoverUrl = '';
 	let selectedTier = 'S';
 	let selectedNovelId = '';
+	
+	// Drag state
+	let draggedItem: TierListItem | null = null;
+	let dragOverTier: string | null = null;
+	
+	// Edit tiers state
+	let editTiers: TierConfig[] = [];
 	
 	$: tierListId = $page.params.id;
 	$: shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/share/${tierListId}` : '';
@@ -40,6 +49,9 @@
 		loading = true;
 		try {
 			tierList = await tierListService.getById(tierListId);
+			if (tierList) {
+				editTiers = [...tierList.tiers];
+			}
 		} catch (err) {
 			console.error(err);
 		} finally {
@@ -60,6 +72,52 @@
 	
 	function getItemCover(item: TierListItem): string | undefined {
 		return item.novel?.cover_url || item.cover_url;
+	}
+	
+	// Drag handlers
+	function handleDragStart(e: DragEvent, item: TierListItem) {
+		draggedItem = item;
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+		}
+	}
+	
+	function handleDragOver(e: DragEvent, tierName: string) {
+		e.preventDefault();
+		dragOverTier = tierName;
+	}
+	
+	function handleDragLeave() {
+		dragOverTier = null;
+	}
+	
+	async function handleDrop(e: DragEvent, tierName: string) {
+		e.preventDefault();
+		dragOverTier = null;
+		
+		if (!draggedItem || !tierList) return;
+		if (draggedItem.tier_name === tierName) {
+			draggedItem = null;
+			return;
+		}
+		
+		try {
+			const position = getItemsForTier(tierName).length;
+			await tierListService.updateItem(draggedItem.id, tierName, position);
+			
+			// Update local state
+			tierList.items = tierList.items.map(item => 
+				item.id === draggedItem!.id 
+					? { ...item, tier_name: tierName, position }
+					: item
+			);
+			
+			toast('Item moved!', 'success');
+		} catch (err) {
+			toast('Failed to move item', 'error');
+		}
+		
+		draggedItem = null;
 	}
 	
 	async function handleAddItem() {
@@ -91,7 +149,7 @@
 		
 		try {
 			await tierListService.removeItem(itemId);
-			await loadTierList();
+			tierList.items = tierList.items.filter(i => i.id !== itemId);
 			toast('Item removed', 'success');
 		} catch (err) {
 			toast('Failed to remove item', 'error');
@@ -114,6 +172,33 @@
 		navigator.clipboard.writeText(shareUrl);
 		toast('Link copied!', 'success');
 	}
+	
+	// Tier editing
+	function addTier() {
+		const colors = ['#ff7f7f', '#ffbf7f', '#ffff7f', '#7fff7f', '#7fbfff', '#bf7fff', '#ff7fbf'];
+		editTiers = [...editTiers, { 
+			name: String.fromCharCode(65 + editTiers.length), 
+			color: colors[editTiers.length % colors.length] 
+		}];
+	}
+	
+	function removeTier(index: number) {
+		if (editTiers.length <= 1) return;
+		editTiers = editTiers.filter((_, i) => i !== index);
+	}
+	
+	async function saveTiers() {
+		if (!tierList) return;
+		
+		try {
+			await tierListService.update(tierList.id, { tiers: editTiers });
+			tierList.tiers = [...editTiers];
+			showEditTiersModal = false;
+			toast('Tiers updated!', 'success');
+		} catch (err) {
+			toast('Failed to update tiers', 'error');
+		}
+	}
 </script>
 
 <svelte:head>
@@ -121,8 +206,16 @@
 </svelte:head>
 
 {#if $auth.loading}
-	<div class="flex items-center justify-center min-h-[50vh]">
-		<p class="text-gray-400">Loading...</p>
+	<div class="max-w-4xl mx-auto px-4 py-8">
+		<Skeleton width="150px" height="1rem" rounded="rounded" />
+		<div class="mt-4 space-y-2">
+			{#each Array(6) as _}
+				<div class="flex">
+					<Skeleton width="64px" height="80px" rounded="rounded-l-lg" />
+					<Skeleton height="80px" rounded="rounded-r-lg" />
+				</div>
+			{/each}
+		</div>
 	</div>
 {:else if !$isAuthenticated}
 	<div class="flex items-center justify-center min-h-[50vh]">
@@ -138,7 +231,14 @@
 		</a>
 		
 		{#if loading}
-			<div class="text-center py-12 text-gray-400">Loading...</div>
+			<div class="mt-4 space-y-2">
+				{#each Array(6) as _}
+					<div class="flex">
+						<Skeleton width="64px" height="80px" rounded="rounded-l-lg" />
+						<Skeleton height="80px" rounded="rounded-r-lg" />
+					</div>
+				{/each}
+			</div>
 		{:else if !tierList}
 			<div class="text-center py-12">
 				<p class="text-gray-400 mb-4">Tier list not found</p>
@@ -147,14 +247,17 @@
 				</a>
 			</div>
 		{:else}
-			<div class="flex items-start justify-between mb-6">
+			<div class="flex items-start justify-between mb-6 flex-wrap gap-4">
 				<div>
-					<h1 class="text-2xl font-bold text-gray-100">{tierList.title}</h1>
+					<h1 class="text-2xl font-bold">{tierList.title}</h1>
 					{#if tierList.description}
 						<p class="text-gray-400 mt-1">{tierList.description}</p>
 					{/if}
 				</div>
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-2 flex-wrap">
+					<Button variant="ghost" size="sm" on:click={() => showEditTiersModal = true}>
+						Edit Tiers
+					</Button>
 					<Button variant="secondary" size="sm" on:click={togglePublic}>
 						{tierList.is_public ? 'Make Private' : 'Make Public'}
 					</Button>
@@ -169,25 +272,40 @@
 				</div>
 			</div>
 			
+			<p class="text-sm text-gray-500 mb-4">Drag items between tiers to reorder</p>
+			
 			<!-- Tiers -->
 			<div class="space-y-2">
 				{#each tierList.tiers as tier}
-					<div class="flex">
+					<div 
+						class="flex"
+						on:dragover={(e) => handleDragOver(e, tier.name)}
+						on:dragleave={handleDragLeave}
+						on:drop={(e) => handleDrop(e, tier.name)}
+						role="list"
+					>
 						<div 
 							class="w-16 flex-shrink-0 flex items-center justify-center font-bold text-xl text-gray-900 rounded-l-lg"
 							style="background-color: {tier.color}"
 						>
 							{tier.name}
 						</div>
-						<div class="flex-1 min-h-[80px] bg-gray-800 border border-gray-700 border-l-0 rounded-r-lg p-2 flex flex-wrap gap-2">
+						<div 
+							class="flex-1 min-h-[80px] bg-gray-800 border border-l-0 rounded-r-lg p-2 flex flex-wrap gap-2 transition-colors {dragOverTier === tier.name ? 'border-primary-500 bg-gray-700' : 'border-gray-700'}"
+						>
 							{#each getItemsForTier(tier.name) as item (item.id)}
-								<div class="relative group">
-									<div class="w-16 h-20 bg-gray-700 rounded overflow-hidden">
+								<div 
+									class="relative group cursor-grab active:cursor-grabbing"
+									draggable="true"
+									on:dragstart={(e) => handleDragStart(e, item)}
+									role="listitem"
+								>
+									<div class="w-16 h-20 bg-gray-700 rounded overflow-hidden {draggedItem?.id === item.id ? 'opacity-50' : ''}">
 										{#if getItemCover(item)}
 											<img 
 												src={getItemCover(item)} 
 												alt={getItemTitle(item)}
-												class="w-full h-full object-cover"
+												class="w-full h-full object-cover pointer-events-none"
 											/>
 										{:else}
 											<div class="w-full h-full flex items-center justify-center text-xs text-gray-400 p-1 text-center">
@@ -203,7 +321,7 @@
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 										</svg>
 									</button>
-									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-xs text-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+									<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-xs text-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
 										{getItemTitle(item)}
 									</div>
 								</div>
@@ -215,11 +333,12 @@
 		{/if}
 	</div>
 
+	<!-- Add Item Modal -->
 	<Modal bind:open={showAddModal} title="Add to Tier List">
 		<form on:submit|preventDefault={handleAddItem} class="space-y-4">
 			<div>
 				<label class="block text-sm font-medium text-gray-300 mb-1">Select Tier</label>
-				<div class="flex gap-2">
+				<div class="flex flex-wrap gap-2">
 					{#each tierList?.tiers || [] as tier}
 						<button
 							type="button"
@@ -277,5 +396,55 @@
 				</Button>
 			</div>
 		</form>
+	</Modal>
+
+	<!-- Edit Tiers Modal -->
+	<Modal bind:open={showEditTiersModal} title="Edit Tiers">
+		<div class="space-y-4">
+			<p class="text-sm text-gray-400">Customize your tier labels and colors</p>
+			
+			<div class="space-y-2">
+				{#each editTiers as tier, i}
+					<div class="flex items-center gap-2">
+						<input
+							type="color"
+							bind:value={tier.color}
+							class="w-10 h-10 rounded cursor-pointer bg-transparent"
+						/>
+						<input
+							type="text"
+							bind:value={tier.name}
+							maxlength="3"
+							class="w-16 px-2 py-2 bg-gray-800 border border-gray-700 rounded text-center text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+						/>
+						<button
+							on:click={() => removeTier(i)}
+							class="p-2 text-gray-500 hover:text-red-400 transition-colors"
+							disabled={editTiers.length <= 1}
+						>
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+							</svg>
+						</button>
+					</div>
+				{/each}
+			</div>
+			
+			<button
+				on:click={addTier}
+				class="w-full py-2 border-2 border-dashed border-gray-700 rounded-lg text-gray-500 hover:border-gray-600 hover:text-gray-400 transition-colors"
+			>
+				+ Add Tier
+			</button>
+			
+			<div class="flex justify-end gap-3 pt-2">
+				<Button variant="secondary" on:click={() => { showEditTiersModal = false; editTiers = [...(tierList?.tiers || [])]; }}>
+					Cancel
+				</Button>
+				<Button on:click={saveTiers}>
+					Save
+				</Button>
+			</div>
+		</div>
 	</Modal>
 {/if}
